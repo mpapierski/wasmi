@@ -3,12 +3,12 @@ extern crate wasmi;
 
 use std::{
     collections::BTreeMap,
-    env::args, time::{Duration}, fs::{self, File}, io::Write,
+    env::args, time::{Duration, Instant}, fs::{self, File}, io::Write,
 };
 
 
 use parity_wasm::elements::{External, FunctionType, Internal, Module, Type, ValueType};
-use quanta::{Instant, Clock};
+use quanta::{Clock};
 use wasmi::{
     profiler::{Profiler, Instruction},
     ImportsBuilder, ModuleInstance, NopExternals, RuntimeValue,
