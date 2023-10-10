@@ -23,21 +23,8 @@ use std::error;
 
 use self::context::ModuleContextBuilder;
 use parity_wasm::elements::{
-    BlockType,
-    ExportEntry,
-    External,
-    FuncBody,
-    GlobalEntry,
-    GlobalType,
-    InitExpr,
-    Instruction,
-    Internal,
-    MemoryType,
-    Module,
-    ResizableLimits,
-    TableType,
-    Type,
-    ValueType,
+    BlockType, ExportEntry, External, FuncBody, GlobalEntry, GlobalType, InitExpr, Instruction,
+    Internal, MemoryType, Module, ResizableLimits, TableType, Type, ValueType,
 };
 
 pub mod context;

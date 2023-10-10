@@ -16,8 +16,7 @@ use core::{
     iter,
     iter::{DoubleEndedIterator, ExactSizeIterator},
     marker::PhantomData,
-    ops,
-    slice,
+    ops, slice,
 };
 
 /// Types that can be used as indices for arenas.

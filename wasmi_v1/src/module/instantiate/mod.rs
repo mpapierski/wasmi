@@ -5,17 +5,8 @@ pub use self::{error::InstantiationError, pre::InstancePre};
 use super::{export, InitExpr, Module, ModuleImportType};
 use crate::{
     module::{init_expr::InitExprOperand, DEFAULT_MEMORY_INDEX},
-    AsContext,
-    AsContextMut,
-    Error,
-    Extern,
-    FuncEntity,
-    Global,
-    Instance,
-    InstanceEntity,
-    InstanceEntityBuilder,
-    Memory,
-    Table,
+    AsContext, AsContextMut, Error, Extern, FuncEntity, Global, Instance, InstanceEntity,
+    InstanceEntityBuilder, Memory, Table,
 };
 use wasmi_core::Value;
 

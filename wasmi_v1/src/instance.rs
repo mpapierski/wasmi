@@ -1,13 +1,5 @@
 use super::{
-    engine::DedupFuncType,
-    AsContext,
-    Extern,
-    Func,
-    Global,
-    Index,
-    Memory,
-    StoreContext,
-    Stored,
+    engine::DedupFuncType, AsContext, Extern, Func, Global, Index, Memory, StoreContext, Stored,
     Table,
 };
 use alloc::{

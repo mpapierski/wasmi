@@ -5,26 +5,10 @@ extern crate wasmi;
 
 use std::{env::args, fs::File};
 use wasmi::{
-    memory_units::*,
-    Error,
-    FuncInstance,
-    FuncRef,
-    GlobalDescriptor,
-    GlobalInstance,
-    GlobalRef,
-    ImportsBuilder,
-    MemoryDescriptor,
-    MemoryInstance,
-    MemoryRef,
-    Module,
-    ModuleImportResolver,
-    ModuleInstance,
-    NopExternals,
-    RuntimeValue,
-    Signature,
-    TableDescriptor,
-    TableInstance,
-    TableRef,
+    memory_units::*, profiler::NoopProfiler, Error, FuncInstance, FuncRef, GlobalDescriptor,
+    GlobalInstance, GlobalRef, ImportsBuilder, MemoryDescriptor, MemoryInstance, MemoryRef, Module,
+    ModuleImportResolver, ModuleInstance, NopExternals, RuntimeValue, Signature, TableDescriptor,
+    TableInstance, TableRef,
 };
 
 fn load_from_file(filename: &str) -> Module {
@@ -93,6 +77,6 @@ fn main() {
             .with_resolver("spectest", &ResolveAll),
     )
     .expect("Failed to instantiate module")
-    .run_start(&mut NopExternals)
+    .run_start(&mut NopExternals, &mut NoopProfiler::default())
     .expect("Failed to run start function in module");
 }

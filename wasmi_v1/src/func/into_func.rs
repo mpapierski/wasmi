@@ -5,8 +5,7 @@ use super::{
 use crate::{
     core::{FromValue, Trap, Value, ValueType, F32, F64},
     foreach_tuple::for_each_tuple,
-    Caller,
-    FuncType,
+    Caller, FuncType,
 };
 use core::{array, iter::FusedIterator};
 use wasmi_core::{DecodeUntypedSlice, EncodeUntypedSlice, UntypedValue};

@@ -1,23 +1,7 @@
 use super::{
-    arena::Arena,
-    engine::DedupFuncType,
-    Engine,
-    Func,
-    FuncEntity,
-    FuncIdx,
-    FuncType,
-    Global,
-    GlobalEntity,
-    GlobalIdx,
-    Instance,
-    InstanceEntity,
-    InstanceIdx,
-    Memory,
-    MemoryEntity,
-    MemoryIdx,
-    Table,
-    TableEntity,
-    TableIdx,
+    arena::Arena, engine::DedupFuncType, Engine, Func, FuncEntity, FuncIdx, FuncType, Global,
+    GlobalEntity, GlobalIdx, Instance, InstanceEntity, InstanceIdx, Memory, MemoryEntity,
+    MemoryIdx, Table, TableEntity, TableIdx,
 };
 use crate::{GuardedEntity, Index};
 use core::sync::atomic::{AtomicU32, Ordering};

@@ -1,25 +1,10 @@
 use super::{
-    import::FuncTypeIdx,
-    DataSegment,
-    ElementSegment,
-    Export,
-    FuncIdx,
-    Global,
-    GlobalIdx,
-    Import,
-    ImportKind,
-    ImportName,
-    InitExpr,
-    Module,
+    import::FuncTypeIdx, DataSegment, ElementSegment, Export, FuncIdx, Global, GlobalIdx, Import,
+    ImportKind, ImportName, InitExpr, Module,
 };
 use crate::{
     engine::{DedupFuncType, FuncBody},
-    Engine,
-    FuncType,
-    GlobalType,
-    MemoryType,
-    ModuleError,
-    TableType,
+    Engine, FuncType, GlobalType, MemoryType, ModuleError, TableType,
 };
 use alloc::vec::Vec;
 

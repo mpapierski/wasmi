@@ -3,17 +3,8 @@ use anyhow::Result;
 use wasmi_core::{Trap, Value, F32, F64};
 use wasmi_v1::{Config, Error as WasmiError};
 use wast::{
-    lexer::Lexer,
-    parser::ParseBuffer,
-    token::Span,
-    AssertExpression,
-    NanPattern,
-    QuoteWat,
-    Wast,
-    WastDirective,
-    WastExecute,
-    WastInvoke,
-    Wat,
+    lexer::Lexer, parser::ParseBuffer, token::Span, AssertExpression, NanPattern, QuoteWat, Wast,
+    WastDirective, WastExecute, WastInvoke, Wat,
 };
 
 /// Runs the Wasm test spec identified by the given name.

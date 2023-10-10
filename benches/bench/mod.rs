@@ -1,5 +1,6 @@
 use super::v0;
 use std::{fs::File, io::Read as _};
+use v0::profiler;
 use wasmi_v1 as v1;
 
 /// Returns the Wasm binary at the given `file_name` as `Vec<u8>`.
@@ -73,7 +74,10 @@ pub fn load_instance_from_file_v0(file_name: &str) -> v0::ModuleRef {
     let module = load_module_from_file_v0(file_name);
     v0::ModuleInstance::new(&module, &v0::ImportsBuilder::default())
         .expect("failed to instantiate wasm module")
-        .run_start(&mut v0::NopExternals)
+        .run_start(
+            &mut v0::NopExternals,
+            &mut profiler::NoopProfiler::default(),
+        )
         .unwrap()
 }
 
@@ -117,7 +121,10 @@ pub fn load_instance_from_wat_v0(wat_bytes: &[u8]) -> v0::ModuleRef {
     let module = v0::Module::from_buffer(&wasm).unwrap();
     v0::ModuleInstance::new(&module, &v0::ImportsBuilder::default())
         .expect("failed to instantiate wasm module")
-        .run_start(&mut v0::NopExternals)
+        .run_start(
+            &mut v0::NopExternals,
+            &mut profiler::NoopProfiler::default(),
+        )
         .unwrap()
 }
 

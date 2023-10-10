@@ -4,10 +4,7 @@ use core::fmt::Write;
 use std::fs;
 use wasmi::{
     core::{Value, ValueType, F32, F64},
-    ExportItemKind,
-    Func,
-    FuncType,
-    Store,
+    ExportItemKind, Func, FuncType, Store,
 };
 use wasmi_v1 as wasmi;
 

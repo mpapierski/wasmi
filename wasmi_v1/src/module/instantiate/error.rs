@@ -2,9 +2,7 @@ use super::ModuleImportType;
 use crate::{
     engine::DedupFuncType,
     errors::{MemoryError, TableError},
-    Extern,
-    GlobalType,
-    Table,
+    Extern, GlobalType, Table,
 };
 use core::{fmt, fmt::Display};
 

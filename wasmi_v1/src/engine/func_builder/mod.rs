@@ -9,11 +9,7 @@ mod value_stack;
 pub use self::inst_builder::{InstructionIdx, InstructionsBuilder, LabelIdx, RelativeDepth, Reloc};
 use self::{
     control_frame::{
-        BlockControlFrame,
-        ControlFrame,
-        ControlFrameKind,
-        IfControlFrame,
-        LoopControlFrame,
+        BlockControlFrame, ControlFrame, ControlFrameKind, IfControlFrame, LoopControlFrame,
         UnreachableControlFrame,
     },
     control_stack::ControlFlowStack,
@@ -24,19 +20,10 @@ use super::{DropKeep, FuncBody, Instruction, Target};
 use crate::{
     engine::bytecode::Offset,
     module::{
-        BlockType,
-        FuncIdx,
-        FuncTypeIdx,
-        GlobalIdx,
-        MemoryIdx,
-        ModuleResources,
-        TableIdx,
+        BlockType, FuncIdx, FuncTypeIdx, GlobalIdx, MemoryIdx, ModuleResources, TableIdx,
         DEFAULT_MEMORY_INDEX,
     },
-    Engine,
-    FuncType,
-    ModuleError,
-    Mutability,
+    Engine, FuncType, ModuleError, Mutability,
 };
 use wasmi_core::{Value, ValueType, F32, F64};
 

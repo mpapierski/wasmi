@@ -1,17 +1,6 @@
 use crate::{
-    ArithmeticOps,
-    ExtendInto,
-    Float,
-    Integer,
-    SignExtendFrom,
-    TrapCode,
-    TruncateSaturateInto,
-    TryTruncateInto,
-    Value,
-    ValueType,
-    WrapInto,
-    F32,
-    F64,
+    ArithmeticOps, ExtendInto, Float, Integer, SignExtendFrom, TrapCode, TruncateSaturateInto,
+    TryTruncateInto, Value, ValueType, WrapInto, F32, F64,
 };
 use core::{
     fmt::{self, Display},

@@ -11,17 +11,11 @@ pub use self::{
 };
 use super::{
     engine::{DedupFuncType, FuncBody, FuncParams, FuncResults},
-    AsContext,
-    AsContextMut,
-    Index,
-    Instance,
-    StoreContext,
-    Stored,
+    AsContext, AsContextMut, Index, Instance, StoreContext, Stored,
 };
 use crate::{
     core::{Trap, Value},
-    Error,
-    FuncType,
+    Error, FuncType,
 };
 use alloc::sync::Arc;
 use core::{fmt, fmt::Debug};

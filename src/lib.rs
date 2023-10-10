@@ -264,6 +264,7 @@ mod isa;
 mod memory;
 mod module;
 mod prepare;
+pub mod profiler;
 mod pwasm;
 mod runner;
 mod table;
@@ -283,29 +284,14 @@ pub use self::{
 #[doc(inline)]
 pub use wasmi_core::Value as RuntimeValue;
 pub use wasmi_core::{
-    memory_units,
-    FromValue,
-    HostError,
-    LittleEndianConvert,
-    Trap,
-    TrapCode,
-    ValueType,
+    memory_units, FromValue, HostError, LittleEndianConvert, Trap, TrapCode, ValueType,
 };
 
 /// Mirrors the old value module.
 pub(crate) mod value {
     pub use wasmi_core::{
-        ArithmeticOps,
-        ExtendInto,
-        Float,
-        FromValue,
-        Integer,
-        LittleEndianConvert,
-        TransmuteInto,
-        TryTruncateInto,
-        Value as RuntimeValue,
-        ValueType,
-        WrapInto,
+        ArithmeticOps, ExtendInto, Float, FromValue, Integer, LittleEndianConvert, TransmuteInto,
+        TryTruncateInto, Value as RuntimeValue, ValueType, WrapInto,
     };
 }
 

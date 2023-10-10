@@ -4,30 +4,11 @@ use std::{collections::HashMap, fs::File};
 
 use wabt::script::{self, Action, Command, CommandKind, ScriptParser, Value as WabtValue};
 use wasmi::{
-    memory_units::Pages,
-    Error as InterpreterError,
-    Externals,
-    FuncInstance,
-    FuncRef,
-    GlobalDescriptor,
-    GlobalInstance,
-    GlobalRef,
-    ImportResolver,
-    ImportsBuilder,
-    MemoryDescriptor,
-    MemoryInstance,
-    MemoryRef,
-    Module,
-    ModuleImportResolver,
-    ModuleInstance,
-    ModuleRef,
-    RuntimeArgs,
-    RuntimeValue,
-    Signature,
-    TableDescriptor,
-    TableInstance,
-    TableRef,
-    Trap,
+    memory_units::Pages, profiler::NoopProfiler, Error as InterpreterError, Externals,
+    FuncInstance, FuncRef, GlobalDescriptor, GlobalInstance, GlobalRef, ImportResolver,
+    ImportsBuilder, MemoryDescriptor, MemoryInstance, MemoryRef, Module, ModuleImportResolver,
+    ModuleInstance, ModuleRef, RuntimeArgs, RuntimeValue, Signature, TableDescriptor,
+    TableInstance, TableRef, Trap,
 };
 
 fn spec_to_value(val: WabtValue<u32, u64>) -> RuntimeValue {
@@ -285,7 +266,7 @@ fn try_load(wasm: &[u8], spec_driver: &mut SpecDriver) -> Result<(), Error> {
     let module = try_load_module(wasm)?;
     let instance = ModuleInstance::new(&module, &ImportsBuilder::default())?;
     instance
-        .run_start(spec_driver.spec_module())
+        .run_start(spec_driver.spec_module(), &mut NoopProfiler::default())
         .map_err(Error::Start)?;
     Ok(())
 }
@@ -298,7 +279,7 @@ fn load_module(
     let module = try_load_module(wasm)?;
     let instance = ModuleInstance::new(&module, spec_driver)
         .map_err(|e| Error::Load(e.to_string()))?
-        .run_start(spec_driver.spec_module())
+        .run_start(spec_driver.spec_module(), &mut NoopProfiler::default())
         .map_err(Error::Start)?;
 
     let module_name = name.clone();
@@ -321,7 +302,12 @@ fn run_action(
                 .module_or_last(module.as_ref().map(|x| x.as_ref()))
                 .unwrap_or_else(|_| panic!("Expected program to have loaded module {:?}", module));
             let vec_args = args.iter().cloned().map(spec_to_value).collect::<Vec<_>>();
-            module.invoke_export(field, &vec_args, program.spec_module())
+            module.invoke_export(
+                field,
+                &vec_args,
+                program.spec_module(),
+                &mut NoopProfiler::default(),
+            )
         }
         Action::Get {
             ref module,

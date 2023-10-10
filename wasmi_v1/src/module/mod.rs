@@ -40,11 +40,7 @@ pub use self::{
 };
 use crate::{
     engine::{DedupFuncType, FuncBody},
-    Engine,
-    Error,
-    GlobalType,
-    MemoryType,
-    TableType,
+    Engine, Error, GlobalType, MemoryType, TableType,
 };
 use core::{iter, slice::Iter as SliceIter};
 

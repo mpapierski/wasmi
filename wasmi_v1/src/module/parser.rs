@@ -1,31 +1,13 @@
 use super::{
-    compile::translate,
-    import::FuncTypeIdx,
-    FuncIdx,
-    Module,
-    ModuleBuilder,
-    ModuleError,
-    ModuleResources,
-    Read,
+    compile::translate, import::FuncTypeIdx, FuncIdx, Module, ModuleBuilder, ModuleError,
+    ModuleResources, Read,
 };
 use crate::Engine;
 use alloc::vec::Vec;
 use wasmparser::{
-    Chunk,
-    DataSectionReader,
-    ElementSectionReader,
-    ExportSectionReader,
-    FunctionBody,
-    FunctionSectionReader,
-    GlobalSectionReader,
-    ImportSectionReader,
-    MemorySectionReader,
-    Parser as WasmParser,
-    Payload,
-    Range,
-    TableSectionReader,
-    TypeSectionReader,
-    Validator,
+    Chunk, DataSectionReader, ElementSectionReader, ExportSectionReader, FunctionBody,
+    FunctionSectionReader, GlobalSectionReader, ImportSectionReader, MemorySectionReader,
+    Parser as WasmParser, Payload, Range, TableSectionReader, TypeSectionReader, Validator,
     WasmFeatures,
 };
 

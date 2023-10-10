@@ -2,8 +2,7 @@ pub use self::block_type::BlockType;
 use super::{utils::value_type_from_wasmparser, FuncIdx, ModuleResources};
 use crate::{
     engine::{FuncBody, FunctionBuilder},
-    Engine,
-    ModuleError,
+    Engine, ModuleError,
 };
 use wasmparser::{FuncValidator, FunctionBody, Operator, ValidatorResources};
 

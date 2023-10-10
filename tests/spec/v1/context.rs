@@ -4,20 +4,8 @@ use std::collections::HashMap;
 use wasmi::nan_preserving_float::{F32, F64};
 use wasmi_core::Value;
 use wasmi_v1::{
-    Config,
-    Engine,
-    Extern,
-    Func,
-    Global,
-    Instance,
-    Linker,
-    Memory,
-    MemoryType,
-    Module,
-    Mutability,
-    Store,
-    Table,
-    TableType,
+    Config, Engine, Extern, Func, Global, Instance, Linker, Memory, MemoryType, Module, Mutability,
+    Store, Table, TableType,
 };
 use wast::token::{Id, Span};
 

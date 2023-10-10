@@ -4,29 +4,10 @@ extern crate std;
 use super::parse_wat;
 use std::println;
 use wasmi::{
-    memory_units::Pages,
-    Error,
-    Externals,
-    FuncInstance,
-    FuncRef,
-    HostError,
-    ImportsBuilder,
-    MemoryDescriptor,
-    MemoryInstance,
-    MemoryRef,
-    ModuleImportResolver,
-    ModuleInstance,
-    ModuleRef,
-    ResumableError,
-    RuntimeArgs,
-    RuntimeValue,
-    Signature,
-    TableDescriptor,
-    TableInstance,
-    TableRef,
-    Trap,
-    TrapCode,
-    ValueType,
+    memory_units::Pages, profiler::NoopProfiler, Error, Externals, FuncInstance, FuncRef,
+    HostError, ImportsBuilder, MemoryDescriptor, MemoryInstance, MemoryRef, ModuleImportResolver,
+    ModuleInstance, ModuleRef, ResumableError, RuntimeArgs, RuntimeValue, Signature,
+    TableDescriptor, TableInstance, TableRef, Trap, TrapCode, ValueType,
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -163,7 +144,7 @@ impl Externals for TestHost {
                     .expect("Function 'recurse' expects attached module instance")
                     .clone();
                 let result = instance
-                    .invoke_export("recursive", &[val], self)
+                    .invoke_export("recursive", &[val], self, &mut NoopProfiler::default())
                     .expect("Failed to call 'recursive'")
                     .expect("expected to be Some");
 
@@ -273,7 +254,7 @@ fn call_host_func() {
 
     assert_eq!(
         instance
-            .invoke_export("test", &[], &mut env)
+            .invoke_export("test", &[], &mut env, &mut NoopProfiler::default())
             .expect("Failed to invoke 'test' function",),
         Some(RuntimeValue::I32(-2))
     );
@@ -306,7 +287,7 @@ fn resume_call_host_func() {
     let func_instance = export.as_func().unwrap();
 
     let mut invocation = FuncInstance::invoke_resumable(&func_instance, &[][..]).unwrap();
-    let result = invocation.start_execution(&mut env);
+    let result = invocation.start_execution(&mut env, &mut NoopProfiler::default());
     match result {
         Err(ResumableError::Trap(_)) => {}
         _ => panic!(),
@@ -316,7 +297,7 @@ fn resume_call_host_func() {
     let trap_sub_result = env.trap_sub_result.take();
     assert_eq!(
         invocation
-            .resume_execution(trap_sub_result, &mut env)
+            .resume_execution(trap_sub_result, &mut env, &mut NoopProfiler::default())
             .expect("Failed to invoke 'test' function",),
         Some(RuntimeValue::I32(-2))
     );
@@ -351,14 +332,16 @@ fn resume_call_host_func_type_mismatch() {
         let func_instance = export.as_func().unwrap();
 
         let mut invocation = FuncInstance::invoke_resumable(&func_instance, &[][..]).unwrap();
-        let result = invocation.start_execution(&mut env);
+        let result = invocation.start_execution(&mut env, &mut NoopProfiler::default());
         match result {
             Err(ResumableError::Trap(_)) => {}
             _ => panic!(),
         }
 
         assert!(invocation.is_resumable());
-        let err = invocation.resume_execution(val, &mut env).unwrap_err();
+        let err = invocation
+            .resume_execution(val, &mut env, &mut NoopProfiler::default())
+            .unwrap_err();
 
         if let ResumableError::Trap(Trap::Code(TrapCode::UnexpectedSignature)) = &err {
             return;
@@ -400,7 +383,7 @@ fn host_err() {
         .assert_no_start();
 
     let error = instance
-        .invoke_export("test", &[], &mut env)
+        .invoke_export("test", &[], &mut env, &mut NoopProfiler::default())
         .expect_err("`test` expected to return error");
 
     println!("err = {:?}", error);
@@ -438,7 +421,7 @@ fn modify_mem_with_host_funcs() {
         .assert_no_start();
 
     instance
-        .invoke_export("modify_mem", &[], &mut env)
+        .invoke_export("modify_mem", &[], &mut env, &mut NoopProfiler::default())
         .expect("Failed to invoke 'test' function");
 
     // Check contents of memory at address 12.
@@ -492,7 +475,9 @@ fn pull_internal_mem_from_module() {
     env.memory = Some(internal_mem);
 
     assert_eq!(
-        instance.invoke_export("test", &[], &mut env).unwrap(),
+        instance
+            .invoke_export("test", &[], &mut env, &mut NoopProfiler::default())
+            .unwrap(),
         Some(RuntimeValue::I32(1))
     );
 }
@@ -538,7 +523,7 @@ fn recursion() {
 
     assert_eq!(
         instance
-            .invoke_export("test", &[], &mut env)
+            .invoke_export("test", &[], &mut env, &mut NoopProfiler::default())
             .expect("Failed to invoke 'test' function",),
         // 363 = 321 + 42
         Some(RuntimeValue::I64(363))
@@ -647,10 +632,20 @@ fn defer_providing_externals() {
         let mut host_externals = HostExternals { acc: &mut acc };
 
         instance
-            .invoke_export("test", &[], &mut host_externals)
+            .invoke_export(
+                "test",
+                &[],
+                &mut host_externals,
+                &mut NoopProfiler::default(),
+            )
             .unwrap(); // acc += 1;
         instance
-            .invoke_export("test", &[], &mut host_externals)
+            .invoke_export(
+                "test",
+                &[],
+                &mut host_externals,
+                &mut NoopProfiler::default(),
+            )
             .unwrap(); // acc += 1;
     }
     assert_eq!(acc, 91);
@@ -766,7 +761,12 @@ fn two_envs_one_externals() {
     .assert_no_start();
 
     untrusted_instance
-        .invoke_export("test", &[], &mut HostExternals)
+        .invoke_export(
+            "test",
+            &[],
+            &mut HostExternals,
+            &mut NoopProfiler::default(),
+        )
         .expect("Failed to invoke 'test' function");
 }
 
@@ -874,7 +874,12 @@ fn dynamically_add_host_func() {
 
     assert_eq!(
         instance
-            .invoke_export("test", &[], &mut host_externals)
+            .invoke_export(
+                "test",
+                &[],
+                &mut host_externals,
+                &mut NoopProfiler::default()
+            )
             .expect("Failed to invoke 'test' function"),
         Some(RuntimeValue::I32(2))
     );

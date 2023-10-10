@@ -3,9 +3,7 @@ use wasmi_core::ValueType;
 use super::{EngineIdx, Guarded};
 use crate::{
     arena::{DedupArena, GuardedEntity},
-    FuncType,
-    Index,
-    Store,
+    FuncType, Index, Store,
 };
 
 /// A raw index to a function signature entity.

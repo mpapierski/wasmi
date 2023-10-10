@@ -1,13 +1,6 @@
 use super::GlobalIdx;
 use crate::{
-    engine::DedupFuncType,
-    Engine,
-    FuncType,
-    GlobalType,
-    MemoryType,
-    Module,
-    ModuleError,
-    TableType,
+    engine::DedupFuncType, Engine, FuncType, GlobalType, MemoryType, Module, ModuleError, TableType,
 };
 use alloc::boxed::Box;
 use core::slice::Iter as SliceIter;

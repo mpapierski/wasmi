@@ -2,11 +2,9 @@ use crate::{
     host::Externals,
     isa,
     module::ModuleInstance,
+    profiler::Profiler,
     runner::{check_function_args, Interpreter, InterpreterState, StackRecycler},
-    RuntimeValue,
-    Signature,
-    Trap,
-    ValueType,
+    RuntimeValue, Signature, Trap, ValueType,
 };
 use alloc::{
     borrow::Cow,
@@ -137,16 +135,36 @@ impl FuncInstance {
     ///
     /// [`signature`]: #method.signature
     /// [`Trap`]: #enum.Trap.html
-    pub fn invoke<E: Externals>(
+    pub fn invoke<E: Externals, P: Profiler>(
         func: &FuncRef,
         args: &[RuntimeValue],
         externals: &mut E,
+        profiler: &mut P,
     ) -> Result<Option<RuntimeValue>, Trap> {
         check_function_args(func.signature(), args)?;
         match *func.as_internal() {
             FuncInstanceInternal::Internal { .. } => {
                 let mut interpreter = Interpreter::new(func, args, None)?;
-                interpreter.start_execution(externals)
+                interpreter.start_execution(externals, profiler)
+            }
+            FuncInstanceInternal::Host {
+                ref host_func_index,
+                ..
+            } => externals.invoke_index(*host_func_index, args.into()),
+        }
+    }
+
+    pub fn invoke_with_profiler<E: Externals, P: Profiler>(
+        func: &FuncRef,
+        args: &[RuntimeValue],
+        externals: &mut E,
+        profiler: &mut P,
+    ) -> Result<Option<RuntimeValue>, Trap> {
+        check_function_args(func.signature(), args)?;
+        match *func.as_internal() {
+            FuncInstanceInternal::Internal { .. } => {
+                let mut interpreter = Interpreter::new(func, args, None)?;
+                interpreter.start_execution(externals, profiler)
             }
             FuncInstanceInternal::Host {
                 ref host_func_index,
@@ -162,17 +180,18 @@ impl FuncInstance {
     /// Same as [`invoke`].
     ///
     /// [`invoke`]: #method.invoke
-    pub fn invoke_with_stack<E: Externals>(
+    pub fn invoke_with_stack<E: Externals, P: Profiler>(
         func: &FuncRef,
         args: &[RuntimeValue],
         externals: &mut E,
         stack_recycler: &mut StackRecycler,
+        profiler: &mut P,
     ) -> Result<Option<RuntimeValue>, Trap> {
         check_function_args(func.signature(), args)?;
         match *func.as_internal() {
             FuncInstanceInternal::Internal { .. } => {
                 let mut interpreter = Interpreter::new(func, args, Some(stack_recycler))?;
-                let return_value = interpreter.start_execution(externals);
+                let return_value = interpreter.start_execution(externals, profiler);
                 stack_recycler.recycle(interpreter);
                 return_value
             }
@@ -289,16 +308,17 @@ impl<'args> FuncInvocation<'args> {
     }
 
     /// Start the invocation execution.
-    pub fn start_execution<'externals, E: Externals + 'externals>(
+    pub fn start_execution<'externals, E: Externals + 'externals, P: Profiler + 'externals>(
         &mut self,
         externals: &'externals mut E,
+        profiler: &'externals mut P,
     ) -> Result<Option<RuntimeValue>, ResumableError> {
         match self.kind {
             FuncInvocationKind::Internal(ref mut interpreter) => {
                 if interpreter.state() != &InterpreterState::Initialized {
                     return Err(ResumableError::AlreadyStarted);
                 }
-                Ok(interpreter.start_execution(externals)?)
+                Ok(interpreter.start_execution(externals, profiler)?)
             }
             FuncInvocationKind::Host {
                 ref args,
@@ -322,10 +342,11 @@ impl<'args> FuncInvocation<'args> {
     ///
     /// [`resumable_value_type`]: #method.resumable_value_type
     /// [`is_resumable`]: #method.is_resumable
-    pub fn resume_execution<'externals, E: Externals + 'externals>(
+    pub fn resume_execution<'externals, E: Externals + 'externals, P: Profiler + 'externals>(
         &mut self,
         return_val: Option<RuntimeValue>,
         externals: &'externals mut E,
+        profiler: &'externals mut P,
     ) -> Result<Option<RuntimeValue>, ResumableError> {
         use crate::TrapCode;
 
@@ -338,7 +359,7 @@ impl<'args> FuncInvocation<'args> {
         match &mut self.kind {
             FuncInvocationKind::Internal(interpreter) => {
                 if interpreter.state().is_resumable() {
-                    Ok(interpreter.resume_execution(return_val, externals)?)
+                    Ok(interpreter.resume_execution(return_val, externals, profiler)?)
                 } else {
                     Err(ResumableError::AlreadyStarted)
                 }

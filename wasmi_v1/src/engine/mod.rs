@@ -30,8 +30,7 @@ use crate::{
     arena::{GuardedEntity, Index},
     core::Trap,
     func::HostFuncEntity,
-    FuncType,
-    Instance,
+    FuncType, Instance,
 };
 use alloc::sync::Arc;
 use core::{

@@ -6,25 +6,17 @@ use crate::{
     memory_units::Pages,
     module::ModuleRef,
     nan_preserving_float::{F32, F64},
+    profiler::Profiler,
     value::{
-        ArithmeticOps,
-        ExtendInto,
-        Float,
-        Integer,
-        LittleEndianConvert,
-        TransmuteInto,
-        TryTruncateInto,
-        WrapInto,
+        ArithmeticOps, ExtendInto, Float, Integer, LittleEndianConvert, TransmuteInto,
+        TryTruncateInto, WrapInto,
     },
-    RuntimeValue,
-    Signature,
-    Trap,
-    TrapCode,
-    ValueType,
+    RuntimeValue, Signature, Trap, TrapCode, ValueType,
 };
 use alloc::{boxed::Box, vec::Vec};
 use core::{fmt, ops, u32, usize};
 use parity_wasm::elements::Local;
+// use std::time::;
 use validation::{DEFAULT_MEMORY_INDEX, DEFAULT_TABLE_INDEX};
 
 /// Maximum number of bytes on the value stack.
@@ -213,15 +205,16 @@ impl Interpreter {
         &self.state
     }
 
-    pub fn start_execution<'a, E: Externals + 'a>(
+    pub fn start_execution<'a, E: Externals + 'a, P: Profiler + 'a>(
         &mut self,
         externals: &'a mut E,
+        profiler: &'a mut P,
     ) -> Result<Option<RuntimeValue>, Trap> {
         // Ensure that the VM has not been executed. This is checked in `FuncInvocation::start_execution`.
         assert!(self.state == InterpreterState::Initialized);
 
         self.state = InterpreterState::Started;
-        self.run_interpreter_loop(externals)?;
+        self.run_interpreter_loop(externals, profiler)?;
 
         let opt_return_value = self
             .return_type
@@ -233,10 +226,11 @@ impl Interpreter {
         Ok(opt_return_value)
     }
 
-    pub fn resume_execution<'a, E: Externals + 'a>(
+    pub fn resume_execution<'a, E: Externals + 'a, P: Profiler + 'a>(
         &mut self,
         return_val: Option<RuntimeValue>,
         externals: &'a mut E,
+        profiler: &'a mut P,
     ) -> Result<Option<RuntimeValue>, Trap> {
         use core::mem::swap;
 
@@ -252,7 +246,7 @@ impl Interpreter {
                 .map_err(Trap::from)?;
         }
 
-        self.run_interpreter_loop(externals)?;
+        self.run_interpreter_loop(externals, profiler)?;
 
         let opt_return_value = self
             .return_type
@@ -264,9 +258,10 @@ impl Interpreter {
         Ok(opt_return_value)
     }
 
-    fn run_interpreter_loop<'a, E: Externals + 'a>(
+    fn run_interpreter_loop<'a, E: Externals + 'a, P: Profiler + 'a>(
         &mut self,
         externals: &'a mut E,
+        profiler: &'a mut P,
     ) -> Result<(), Trap> {
         loop {
             let mut function_context = self.call_stack.pop().expect(
@@ -285,7 +280,7 @@ impl Interpreter {
             }
 
             let function_return = self
-                .do_run_function(&mut function_context, &function_body.code)
+                .do_run_function(&mut function_context, &function_body.code, profiler)
                 .map_err(Trap::from)?;
 
             match function_return {
@@ -320,6 +315,7 @@ impl Interpreter {
                                 &nested_func,
                                 &self.scratch,
                                 externals,
+                                profiler,
                             ) {
                                 Ok(val) => val,
                                 Err(trap) => {
@@ -351,10 +347,11 @@ impl Interpreter {
         }
     }
 
-    fn do_run_function(
+    fn do_run_function<P: Profiler>(
         &mut self,
         function_context: &mut FunctionContext,
         instructions: &isa::Instructions,
+        profiler: &mut P,
     ) -> Result<RunResult, TrapCode> {
         let mut iter = instructions.iterate_from(function_context.position);
 
@@ -365,22 +362,33 @@ impl Interpreter {
                  return or an implicit block `end`.",
             );
 
-            match self.run_instruction(function_context, &instruction)? {
-                InstructionOutcome::RunNextInstruction => {}
+            let now = profiler.sample_time();
+
+            let result = self.run_instruction(function_context, &instruction);
+
+
+            match result? {
+                InstructionOutcome::RunNextInstruction => {
+                    profiler.trace(instruction.into(), now);
+                }
                 InstructionOutcome::Branch(target) => {
                     iter = instructions.iterate_from(target.dst_pc);
                     self.value_stack.drop_keep(target.drop_keep);
+                    profiler.trace(instruction.into(), now);
                 }
                 InstructionOutcome::ExecuteCall(func_ref) => {
                     function_context.position = iter.position();
+                    profiler.trace(instruction.into(), now);
                     return Ok(RunResult::NestedCall(func_ref));
                 }
                 InstructionOutcome::Return(drop_keep) => {
                     self.value_stack.drop_keep(drop_keep);
+                    profiler.trace(instruction.into(), now);
                     break;
                 }
             }
         }
+
 
         Ok(RunResult::Return)
     }

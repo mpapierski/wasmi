@@ -3,25 +3,10 @@ extern crate std;
 
 use std::{fs::File, vec::Vec};
 use wasmi::{
-    memory_units::Pages,
-    Error,
-    FuncRef,
-    GlobalDescriptor,
-    GlobalInstance,
-    GlobalRef,
-    ImportsBuilder,
-    MemoryDescriptor,
-    MemoryInstance,
-    MemoryRef,
-    Module,
-    ModuleImportResolver,
-    ModuleInstance,
-    NopExternals,
-    RuntimeValue,
-    Signature,
-    TableDescriptor,
-    TableInstance,
-    TableRef,
+    memory_units::Pages, profiler::NoopProfiler, Error, FuncRef, GlobalDescriptor, GlobalInstance,
+    GlobalRef, ImportsBuilder, MemoryDescriptor, MemoryInstance, MemoryRef, Module,
+    ModuleImportResolver, ModuleInstance, NopExternals, RuntimeValue, Signature, TableDescriptor,
+    TableInstance, TableRef,
 };
 
 struct Env {
@@ -123,7 +108,12 @@ fn interpreter_inc_i32() {
     let exp_retval = Some(RuntimeValue::I32(i32_val + 1));
 
     let retval = instance
-        .invoke_export(FUNCTION_NAME, args, &mut NopExternals)
+        .invoke_export(
+            FUNCTION_NAME,
+            args,
+            &mut NopExternals,
+            &mut NoopProfiler::default(),
+        )
         .expect("");
     assert_eq!(exp_retval, retval);
 }
@@ -157,7 +147,12 @@ fn interpreter_accumulate_u8() {
         RuntimeValue::I32(offset as i32),
     ];
     let retval = instance
-        .invoke_export(FUNCTION_NAME, args, &mut NopExternals)
+        .invoke_export(
+            FUNCTION_NAME,
+            args,
+            &mut NopExternals,
+            &mut NoopProfiler::default(),
+        )
         .expect("Failed to execute function");
 
     // For verification, repeat accumulation using native code

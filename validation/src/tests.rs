@@ -2,18 +2,8 @@ use crate::{Error, PlainValidator};
 use parity_wasm::{
     builder::module,
     elements::{
-        BlockType,
-        External,
-        GlobalEntry,
-        GlobalType,
-        ImportEntry,
-        InitExpr,
-        Instruction,
-        Instructions,
-        MemoryType,
-        Module,
-        TableType,
-        ValueType,
+        BlockType, External, GlobalEntry, GlobalType, ImportEntry, InitExpr, Instruction,
+        Instructions, MemoryType, Module, TableType, ValueType,
     },
 };
 

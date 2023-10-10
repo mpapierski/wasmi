@@ -2,18 +2,10 @@
 
 use super::{
     super::{
-        func::WasmFuncEntity,
-        AsContext,
-        Func,
-        FuncBody,
-        FuncEntityInternal,
-        Instance,
-        Memory,
+        func::WasmFuncEntity, AsContext, Func, FuncBody, FuncEntityInternal, Instance, Memory,
         Table,
     },
-    ResolvedFuncBody,
-    ValueStack,
-    DEFAULT_CALL_STACK_LIMIT,
+    ResolvedFuncBody, ValueStack, DEFAULT_CALL_STACK_LIMIT,
 };
 use crate::{
     core::TrapCode,

@@ -1,17 +1,13 @@
 mod bench;
 
 use self::bench::{
-    load_instance_from_file_v0,
-    load_instance_from_file_v1,
-    load_instance_from_wat_v0,
-    load_instance_from_wat_v1,
-    load_module_from_file_v0,
-    load_module_from_file_v1,
-    load_wasm_from_file,
-    wat2wasm,
+    load_instance_from_file_v0, load_instance_from_file_v1, load_instance_from_wat_v0,
+    load_instance_from_wat_v1, load_module_from_file_v0, load_module_from_file_v1,
+    load_wasm_from_file, wat2wasm,
 };
 use criterion::{criterion_group, criterion_main, Bencher, Criterion};
 use std::{slice, time::Duration};
+use v0::profiler::NoopProfiler;
 use wasmi as v0;
 use wasmi::{RuntimeValue as Value, Trap};
 use wasmi_v1 as v1;
@@ -124,12 +120,22 @@ fn bench_execute_tiny_keccak_v0(c: &mut Criterion) {
     c.bench_function("execute/tiny_keccak/v0", |b| {
         let instance = load_instance_from_file_v0(WASM_KERNEL);
         let test_data_ptr = instance
-            .invoke_export("prepare_tiny_keccak", &[], &mut v0::NopExternals)
+            .invoke_export(
+                "prepare_tiny_keccak",
+                &[],
+                &mut v0::NopExternals,
+                &mut v0::profiler::NoopProfiler::default(),
+            )
             .unwrap()
             .unwrap();
         b.iter(|| {
             instance
-                .invoke_export("bench_tiny_keccak", &[test_data_ptr], &mut v0::NopExternals)
+                .invoke_export(
+                    "bench_tiny_keccak",
+                    &[test_data_ptr],
+                    &mut v0::NopExternals,
+                    &mut v0::profiler::NoopProfiler::default(),
+                )
                 .unwrap();
         })
     });
@@ -169,6 +175,7 @@ fn bench_execute_rev_comp_v0(c: &mut Criterion) {
                 "prepare_rev_complement",
                 &[input_size],
                 &mut v0::NopExternals,
+                &mut v0::profiler::NoopProfiler::default(),
             )
             .unwrap()
             .unwrap();
@@ -179,6 +186,7 @@ fn bench_execute_rev_comp_v0(c: &mut Criterion) {
                 "rev_complement_input_ptr",
                 &[test_data_ptr],
                 &mut v0::NopExternals,
+                &mut v0::profiler::NoopProfiler::default(),
             )
             .unwrap()
             .unwrap()
@@ -202,6 +210,7 @@ fn bench_execute_rev_comp_v0(c: &mut Criterion) {
                     "bench_rev_complement",
                     &[test_data_ptr],
                     &mut v0::NopExternals,
+                    &mut v0::profiler::NoopProfiler::default(),
                 )
                 .unwrap();
         });
@@ -212,6 +221,7 @@ fn bench_execute_rev_comp_v0(c: &mut Criterion) {
                 "rev_complement_output_ptr",
                 &[test_data_ptr],
                 &mut v0::NopExternals,
+                &mut v0::profiler::NoopProfiler::default(),
             )
             .unwrap()
             .unwrap()
@@ -305,7 +315,12 @@ fn bench_execute_regex_redux_v0(c: &mut Criterion) {
         // Allocate buffers for the input and output.
         let input_size = Value::I32(REVCOMP_INPUT.len() as i32);
         let test_data_ptr = instance
-            .invoke_export("prepare_regex_redux", &[input_size], &mut v0::NopExternals)
+            .invoke_export(
+                "prepare_regex_redux",
+                &[input_size],
+                &mut v0::NopExternals,
+                &mut v0::profiler::NoopProfiler::default(),
+            )
             .unwrap()
             .unwrap();
 
@@ -315,6 +330,7 @@ fn bench_execute_regex_redux_v0(c: &mut Criterion) {
                 "regex_redux_input_ptr",
                 &[test_data_ptr],
                 &mut v0::NopExternals,
+                &mut v0::profiler::NoopProfiler::default(),
             )
             .unwrap()
             .unwrap()
@@ -334,7 +350,12 @@ fn bench_execute_regex_redux_v0(c: &mut Criterion) {
 
         b.iter(|| {
             instance
-                .invoke_export("bench_regex_redux", &[test_data_ptr], &mut v0::NopExternals)
+                .invoke_export(
+                    "bench_regex_redux",
+                    &[test_data_ptr],
+                    &mut v0::NopExternals,
+                    &mut v0::profiler::NoopProfiler::default(),
+                )
                 .unwrap();
         })
     });
@@ -405,6 +426,7 @@ fn bench_execute_count_until_v0(c: &mut Criterion) {
                     "count_until",
                     &[Value::I32(COUNT_UNTIL)],
                     &mut v0::NopExternals,
+                    &mut v0::profiler::NoopProfiler::default(),
                 )
                 .unwrap();
             assert_eq!(value, Some(Value::I32(COUNT_UNTIL)));
@@ -440,6 +462,7 @@ fn bench_execute_fac_recursive_v0(c: &mut Criterion) {
                     "recursive_factorial",
                     &[Value::I64(25)],
                     &mut v0::NopExternals,
+                    &mut v0::profiler::NoopProfiler::default(),
                 )
                 .unwrap();
             assert_eq!(value, Some(Value::I64(7034535277573963776)));
@@ -473,6 +496,7 @@ fn bench_execute_fac_opt_v0(c: &mut Criterion) {
                     "iterative_factorial",
                     &[Value::I64(25)],
                     &mut v0::NopExternals,
+                    &mut v0::profiler::NoopProfiler::default(),
                 )
                 .unwrap();
             assert_eq!(value, Some(Value::I64(7034535277573963776)));
@@ -508,6 +532,7 @@ fn bench_execute_recursive_ok_v0(c: &mut Criterion) {
                     "call",
                     &[Value::I32(RECURSIVE_DEPTH)],
                     &mut v0::NopExternals,
+                    &mut v0::profiler::NoopProfiler::default(),
                 )
                 .unwrap();
             assert_eq!(value, Some(Value::I32(0)));
@@ -547,6 +572,7 @@ fn bench_execute_recursive_scan_v0(c: &mut Criterion) {
                     "func",
                     &[Value::I32(RECURSIVE_DEPTH)],
                     &mut v0::NopExternals,
+                    &mut v0::profiler::NoopProfiler::default(),
                 )
                 .unwrap();
             assert_eq!(value, Some(Value::I32(RECURSIVE_SCAN_EXPECTED)));
@@ -578,7 +604,12 @@ fn bench_execute_recursive_trap_v0(c: &mut Criterion) {
         let instance = load_instance_from_wat_v0(include_bytes!("wat/recursive_trap.wat"));
         b.iter(|| {
             let error = instance
-                .invoke_export("call", &[Value::I32(1000)], &mut v0::NopExternals)
+                .invoke_export(
+                    "call",
+                    &[Value::I32(1000)],
+                    &mut v0::NopExternals,
+                    &mut v0::profiler::NoopProfiler::default(),
+                )
                 .unwrap_err();
             assert!(matches!(
                 error,
@@ -713,6 +744,7 @@ fn bench_execute_host_calls_v0(c: &mut Criterion) {
                     "call",
                     &[Value::I64(HOST_CALLS_REPETITIONS)],
                     &mut BenchExternals,
+                    &mut NoopProfiler::default(),
                 )
                 .unwrap();
             assert_eq!(value, Some(Value::I64(0)));
@@ -782,6 +814,7 @@ fn bench_execute_fibonacci_recursive_v0(c: &mut Criterion) {
                     "fib_recursive",
                     &[Value::I64(FIBONACCI_REC_N)],
                     &mut v0::NopExternals,
+                    &mut v0::profiler::NoopProfiler::default(),
                 )
                 .unwrap();
             assert_eq!(result, Some(Value::I64(FIBONACCI_REC_RESULT)));
@@ -816,6 +849,7 @@ fn bench_execute_fibonacci_iterative_v0(c: &mut Criterion) {
                     "fib_iterative",
                     &[Value::I64(FIBONACCI_INC_N)],
                     &mut v0::NopExternals,
+                    &mut v0::profiler::NoopProfiler::default(),
                 )
                 .unwrap();
             assert_eq!(result, Some(Value::I64(FIBONACCI_INC_RESULT)));

@@ -6,8 +6,7 @@ use crate::{
 use alloc::{rc::Rc, string::ToString, vec::Vec};
 use core::{
     cell::{Cell, Ref, RefCell, RefMut},
-    cmp,
-    fmt,
+    cmp, fmt,
     ops::Range,
     u32,
 };

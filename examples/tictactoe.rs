@@ -3,20 +3,9 @@ extern crate wasmi;
 
 use std::{env, fmt, fs::File};
 use wasmi::{
-    Error as InterpreterError,
-    Externals,
-    FuncInstance,
-    FuncRef,
-    HostError,
-    ImportsBuilder,
-    ModuleImportResolver,
-    ModuleInstance,
-    ModuleRef,
-    RuntimeArgs,
-    RuntimeValue,
-    Signature,
-    Trap,
-    ValueType,
+    profiler::NoopProfiler, Error as InterpreterError, Externals, FuncInstance, FuncRef, HostError,
+    ImportsBuilder, ModuleImportResolver, ModuleInstance, ModuleRef, RuntimeArgs, RuntimeValue,
+    Signature, Trap, ValueType,
 };
 
 #[derive(Debug)]
@@ -230,7 +219,12 @@ fn play(
                 player: turn_of,
                 game,
             };
-            let _ = instance.invoke_export("mk_turn", &[], &mut runtime)?;
+            let _ = instance.invoke_export(
+                "mk_turn",
+                &[],
+                &mut runtime,
+                &mut NoopProfiler::default(),
+            )?;
         }
 
         if let Some(game_result) = game.game_result() {

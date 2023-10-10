@@ -1,13 +1,7 @@
 use super::{
     super::{Global, Memory, Table},
     bytecode::{FuncIdx, GlobalIdx, Instruction, LocalIdx, Offset, SignatureIdx},
-    AsContextMut,
-    CallOutcome,
-    DropKeep,
-    EngineInner,
-    FunctionFrame,
-    ResolvedFuncBody,
-    Target,
+    AsContextMut, CallOutcome, DropKeep, EngineInner, FunctionFrame, ResolvedFuncBody, Target,
     ValueStack,
 };
 use crate::{

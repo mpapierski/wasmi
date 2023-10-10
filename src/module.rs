@@ -6,16 +6,11 @@ use crate::{
     memory::MemoryRef,
     memory_units::Pages,
     nan_preserving_float::{F32, F64},
+    profiler::{self, Profiler},
     runner::StackRecycler,
     table::TableRef,
     types::{GlobalDescriptor, MemoryDescriptor, TableDescriptor},
-    Error,
-    MemoryInstance,
-    Module,
-    RuntimeValue,
-    Signature,
-    TableInstance,
-    Trap,
+    Error, MemoryInstance, Module, RuntimeValue, Signature, TableInstance, Trap,
 };
 use alloc::{
     borrow::ToOwned,
@@ -634,15 +629,16 @@ impl ModuleInstance {
     /// );
     /// # }
     /// ```
-    pub fn invoke_export<E: Externals>(
+    pub fn invoke_export<E: Externals, P: Profiler>(
         &self,
         func_name: &str,
         args: &[RuntimeValue],
         externals: &mut E,
+        profiler: &mut P,
     ) -> Result<Option<RuntimeValue>, Error> {
         let func_instance = self.func_by_name(func_name)?;
 
-        FuncInstance::invoke(&func_instance, args, externals).map_err(Error::Trap)
+        FuncInstance::invoke(&func_instance, args, externals, profiler).map_err(Error::Trap)
     }
 
     /// Invoke exported function by a name using recycled stacks.
@@ -652,16 +648,17 @@ impl ModuleInstance {
     /// Same as [`invoke_export`].
     ///
     /// [`invoke_export`]: #method.invoke_export
-    pub fn invoke_export_with_stack<E: Externals>(
+    pub fn invoke_export_with_stack<E: Externals, P: Profiler>(
         &self,
         func_name: &str,
         args: &[RuntimeValue],
         externals: &mut E,
         stack_recycler: &mut StackRecycler,
+        profiler: &mut P,
     ) -> Result<Option<RuntimeValue>, Error> {
         let func_instance = self.func_by_name(func_name)?;
 
-        FuncInstance::invoke_with_stack(&func_instance, args, externals, stack_recycler)
+        FuncInstance::invoke_with_stack(&func_instance, args, externals, stack_recycler, profiler)
             .map_err(Error::Trap)
     }
 
@@ -729,13 +726,17 @@ impl<'a> NotStartedModuleRef<'a> {
     /// # Errors
     ///
     /// Returns `Err` if start function traps.
-    pub fn run_start<E: Externals>(self, state: &mut E) -> Result<ModuleRef, Trap> {
+    pub fn run_start<E: Externals, P: Profiler>(
+        self,
+        state: &mut E,
+        profiler: &mut P,
+    ) -> Result<ModuleRef, Trap> {
         if let Some(start_fn_idx) = self.loaded_module.module().start_section() {
             let start_func = self
                 .instance
                 .func_by_index(start_fn_idx)
                 .expect("Due to validation start function should exists");
-            FuncInstance::invoke(&start_func, &[], state)?;
+            FuncInstance::invoke(&start_func, &[], state, profiler)?;
         }
         Ok(self.instance)
     }
@@ -745,17 +746,18 @@ impl<'a> NotStartedModuleRef<'a> {
     /// # Errors
     ///
     /// Returns `Err` if start function traps.
-    pub fn run_start_with_stack<E: Externals>(
+    pub fn run_start_with_stack<E: Externals, P: Profiler>(
         self,
         state: &mut E,
         stack_recycler: &mut StackRecycler,
+        profiler: &mut P,
     ) -> Result<ModuleRef, Trap> {
         if let Some(start_fn_idx) = self.loaded_module.module().start_section() {
             let start_func = self
                 .instance
                 .func_by_index(start_fn_idx)
                 .expect("Due to validation start function should exists");
-            FuncInstance::invoke_with_stack(&start_func, &[], state, stack_recycler)?;
+            FuncInstance::invoke_with_stack(&start_func, &[], state, stack_recycler, profiler)?;
         }
         Ok(self.instance)
     }

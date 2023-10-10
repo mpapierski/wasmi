@@ -5,8 +5,7 @@ use crate::{
     module::ModuleRef,
     table::TableRef,
     types::{GlobalDescriptor, MemoryDescriptor, TableDescriptor},
-    Error,
-    Signature,
+    Error, Signature,
 };
 use alloc::{collections::BTreeMap, string::String};
 

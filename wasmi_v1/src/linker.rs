@@ -1,15 +1,10 @@
 use super::{
     errors::{MemoryError, TableError},
-    AsContextMut,
-    Error,
-    Extern,
-    InstancePre,
-    Module,
+    AsContextMut, Error, Extern, InstancePre, Module,
 };
 use crate::{
     module::{ImportName, ModuleImport, ModuleImportType},
-    FuncType,
-    GlobalType,
+    FuncType, GlobalType,
 };
 use alloc::{
     collections::{btree_map::Entry, BTreeMap},
